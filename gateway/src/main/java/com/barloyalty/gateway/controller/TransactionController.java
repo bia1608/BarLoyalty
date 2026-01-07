@@ -6,15 +6,16 @@ import com.barloyalty.gateway.model.User;
 import com.barloyalty.gateway.repository.BarRepository;
 import com.barloyalty.gateway.repository.TransactionRepository;
 import com.barloyalty.gateway.repository.UserRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,51 +23,78 @@ import java.util.Optional;
 @RequestMapping("/api/transactions")
 public class TransactionController {
 
-    @Autowired
-    private TransactionRepository transactionRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private BarRepository barRepository;
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final BarRepository barRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final Counter transactionsConfirmedCounter;
 
-    // Acest obiectwsl este "poștașul" pentru WebSockets
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    public TransactionController(TransactionRepository transactionRepository,
+                                 UserRepository userRepository,
+                                 BarRepository barRepository,
+                                 SimpMessagingTemplate messagingTemplate,
+                                 MeterRegistry meterRegistry) {
+        this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
+        this.barRepository = barRepository;
+        this.messagingTemplate = messagingTemplate;
 
-    // Endpoint-ul pe care îl va apela microserviciul Python
+        this.transactionsConfirmedCounter = Counter.builder("barloyalty.transactions.confirmed")
+                .description("Numarul total de tranzactii confirmate cu succes")
+                .register(meterRegistry);
+    }
+
     @PostMapping("/confirm")
-    public ResponseEntity<String> confirmTransaction(@RequestBody Map<String, Long> payload) {
-        Long clientId = payload.get("clientId");
-        Long barId = payload.get("barId");
-        Long points = payload.get("points");
+    public ResponseEntity<String> confirmTransaction(@RequestBody Map<String, Object> payload) {
+        Long clientId = Long.valueOf(String.valueOf(payload.get("clientId")));
+        Long barId = Long.valueOf(String.valueOf(payload.get("barId")));
+        Integer points = Integer.valueOf(String.valueOf(payload.get("points")));
 
-        // Căutăm clientul și barul în baza de date
         Optional<User> userOptional = userRepository.findById(clientId);
         Optional<Bar> barOptional = barRepository.findById(barId);
 
         if (userOptional.isEmpty() || barOptional.isEmpty()) {
-            return new ResponseEntity<>("Client or Bar not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Client or Bar not found", HttpStatus.BAD_REQUEST);
         }
 
-        // Creăm o nouă tranzacție
-        Transaction transaction = new Transaction();
-        transaction.setClient(userOptional.get());
-        transaction.setBar(barOptional.get());
-        transaction.setPoints(points.intValue());
-        transaction.setTimestamp(LocalDateTime.now());
+        User user = userOptional.get();
+        Bar bar = barOptional.get();
 
-        // Salvăm tranzacția în baza de date
+        Transaction transaction = new Transaction();
+        transaction.setClient(user);
+        transaction.setBar(bar);
+        transaction.setPoints(points);
+        transaction.setTimestamp(LocalDateTime.now());
         transactionRepository.save(transaction);
 
-        // AICI ESTE MAGIA WEBSOCKET
-        // Trimitem un mesaj pe un canal specific clientului
-        // Canalul este de forma /topic/points/username
-        String username = userOptional.get().getUsername();
-        String message = "Tranzactie noua! Ai primit " + points + " puncte.";
+        user.setLoyaltyPoints(user.getLoyaltyPoints() + points);
+        userRepository.save(user);
+
+        this.transactionsConfirmedCounter.increment();
+
+        String username = user.getUsername();
+        String message = "Tranzactie noua! Ai primit " + points + " puncte. Total: " + user.getLoyaltyPoints();
         messagingTemplate.convertAndSend("/topic/points/" + username, message);
 
         System.out.println("Tranzactie confirmata pentru " + username + ". Notificare WebSocket trimisa.");
 
-        return new ResponseEntity<>("Transaction confirmed successfully", HttpStatus.OK);
+        return new ResponseEntity<>("Transaction confirmed successfully", HttpStatus.CREATED);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Transaction>> getUserTransactions(@PathVariable Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        List<Transaction> transactions = transactionRepository.findByClient(userOptional.get());
+        return new ResponseEntity<>(transactions, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Transaction>> getAllTransactions() {
+        List<Transaction> transactions = transactionRepository.findAll();
+        return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 }

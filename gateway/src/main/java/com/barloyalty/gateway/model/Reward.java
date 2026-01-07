@@ -1,4 +1,5 @@
 package com.barloyalty.gateway.model;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -7,18 +8,29 @@ public class Reward {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
-    private int pointsRequired;
+    private String description;
+    private Integer pointsCost;
+
     @ManyToOne
+    @JoinColumn(name = "bar_id")
     private Bar bar;
 
-    // Getters and Setters
+    public Reward() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public int getPointsRequired() { return pointsRequired; }
-    public void setPointsRequired(int pointsRequired) { this.pointsRequired = pointsRequired; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Integer getPointsCost() { return pointsCost; }
+    public void setPointsCost(Integer pointsCost) { this.pointsCost = pointsCost; }
+
     public Bar getBar() { return bar; }
     public void setBar(Bar bar) { this.bar = bar; }
 }

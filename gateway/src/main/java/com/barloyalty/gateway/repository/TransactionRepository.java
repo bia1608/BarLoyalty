@@ -1,5 +1,12 @@
 package com.barloyalty.gateway.repository;
-import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.barloyalty.gateway.model.Transaction;
-public interface TransactionRepository extends JpaRepository<Transaction,Long>{
+import com.barloyalty.gateway.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+import java.util.Optional;
+
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+    List<Transaction> findByClient(User client);
+    Optional<Transaction> findByQrCode(String qrCode);
 }

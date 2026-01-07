@@ -87,5 +87,11 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Maven: io.micrometer:micrometer-core:1.16.1" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.data:spring-data-jpa:3.2.1" level="project" />
+    <orderEntry type="library" name="Maven: io.micrometer:micrometer-core:1.12.1" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-config:6.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-crypto:6.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-web:6.2.1" level="project" />
+    <orderEntry type="library" name="Maven: jakarta.persistence:jakarta.persistence-api:3.1.0" level="project" />
   </component>
 </module>
