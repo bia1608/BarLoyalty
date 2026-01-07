@@ -33,7 +33,7 @@ public class DataLoader {
             User admin = new User();
             admin.setUsername("bar_admin1");
             admin.setPassword(passwordEncoder.encode("password"));
-            admin.setRole("BAR_ADMIN");
+            admin.setRole("BAR_OWNER");
             userRepository.save(admin);
 
             User client1 = new User();

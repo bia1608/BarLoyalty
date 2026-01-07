@@ -33,4 +33,8 @@ public class Reward {
 
     public Bar getBar() { return bar; }
     public void setBar(Bar bar) { this.bar = bar; }
+
+    public void setPointsRequired(int i) {
+        this.pointsCost = i;
+    }
 }

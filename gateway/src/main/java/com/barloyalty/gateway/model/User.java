@@ -48,4 +48,8 @@ public class User {
 
     public List<Transaction> getTransactions() { return transactions; }
     public void setTransactions(List<Transaction> transactions) { this.transactions = transactions; }
+
+    public void setRole(String barAdmin) {
+        this.role = UserRole.valueOf(barAdmin);
+    }
 }
