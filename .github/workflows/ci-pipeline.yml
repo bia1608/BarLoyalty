@@ -1,0 +1,33 @@
+# Acest pipeline pornește la orice push pe ramura 'main'
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    # Rulează pe o mașină virtuală Ubuntu pusă la dispoziție de GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+      # Pasul 1: Descarcă codul din repository pe mașina virtuală
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Pasul 2: Setează mediul Java (JDK 17)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Pasul 3: Construiește și testează proiectul Spring Boot cu Maven
+      # Folosim "mvnw" (Maven Wrapper) care este inclus în proiect
+      - name: Build and test Gateway with Maven
+        run: ./gateway/mvnw -f ./gateway/pom.xml clean install
+
+      # Pasul 4: Construiește imaginile Docker folosind docker-compose
+      # Acest pas verifică dacă Dockerfile-urile sunt corecte
+      - name: Build Docker images
+        run: docker-compose build
