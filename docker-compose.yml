@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: bar-loyalty-db
+    environment:
+      POSTGRES_DB: barloyalty
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  gateway:
+    build: ./gateway
+    container_name: bar-loyalty-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/barloyalty
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      - postgres
+
+  qr-service:
+    build: ./qr-microservice
+    container_name: bar-loyalty-qr
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
