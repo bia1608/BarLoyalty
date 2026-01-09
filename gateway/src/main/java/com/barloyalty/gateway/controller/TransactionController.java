@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -96,5 +98,21 @@ public class TransactionController {
     public ResponseEntity<List<Transaction>> getAllTransactions() {
         List<Transaction> transactions = transactionRepository.findAll();
         return new ResponseEntity<>(transactions, HttpStatus.OK);
+    }
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    // Adaugă această metodă nouă în interiorul clasei TransactionController
+    @PostMapping("/generate-qr")
+    public ResponseEntity<String> generateQrCode(@RequestBody Map<String, Object> payload) {
+        try {
+            // Apelăm microserviciul Python
+            String qrServiceUrl = "http://qr-service:8000/qr/generate";
+            ResponseEntity<String> response = restTemplate.postForEntity(qrServiceUrl, payload, String.class);
+            return response;
+        } catch (RestClientException e) {
+            return new ResponseEntity<>("QR Service is unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 }
