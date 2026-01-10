@@ -1,5 +1,6 @@
 package com.barloyalty.gateway.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -10,10 +11,12 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "client_id")
     private User client;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "bar_id")
     private Bar bar;

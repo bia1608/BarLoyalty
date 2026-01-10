@@ -1,5 +1,6 @@
 package com.barloyalty.gateway.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,6 +14,7 @@ public class Reward {
     private String description;
     private Integer pointsCost;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "bar_id")
     private Bar bar;

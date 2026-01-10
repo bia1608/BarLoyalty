@@ -24,6 +24,13 @@ public class DataLoader {
             if (barRepository.count() == 0) {
                 System.out.println("Baza de date este goala. Se adauga date initiale...");
 
+                // 4. Creeaza un utilizator tehnic pentru serviciul QR
+                User qrServiceUser = new User();
+                qrServiceUser.setUsername("qr-service-user");
+                qrServiceUser.setPassword(passwordEncoder.encode("secret-password"));
+                qrServiceUser.setRole("QR_SERVICE"); // Ii dam un rol special
+                userRepository.save(qrServiceUser);
+
                 // 1. Creează utilizatori
                 User client1 = new User();
                 client1.setUsername("client1");

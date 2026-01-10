@@ -1,5 +1,6 @@
 package com.barloyalty.gateway.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,11 @@ public class Bar {
     private String address;
     private String ownerEmail;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "bar")
     private List<Reward> rewards = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "bar")
     private List<Transaction> transactions = new ArrayList<>();
 

@@ -1,5 +1,6 @@
 package com.barloyalty.gateway.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +18,9 @@ public class User {
     private String name;
     private Integer loyaltyPoints = 0;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
+    private String role;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "client")
     private List<Transaction> transactions = new ArrayList<>();
 
@@ -43,13 +44,15 @@ public class User {
     public Integer getLoyaltyPoints() { return loyaltyPoints; }
     public void setLoyaltyPoints(Integer loyaltyPoints) { this.loyaltyPoints = loyaltyPoints; }
 
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     public List<Transaction> getTransactions() { return transactions; }
     public void setTransactions(List<Transaction> transactions) { this.transactions = transactions; }
 
-    public void setRole(String barAdmin) {
-        this.role = UserRole.valueOf(barAdmin);
-    }
 }
