@@ -1,36 +1,25 @@
 version: '3.8'
-
 services:
-  # Serviciul de Bază de Date
   db:
-    image: postgres:15-alpine
-    container_name: barloyalty_db
+    image: postgres:15
     environment:
-      POSTGRES_DB: barloyalty_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d barloyalty_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
-  # Serviciul Gateway (Spring Boot)
   gateway:
-    build: ./gateway
-    container_name: barloyalty_gateway
+    build: .
     ports:
       - "8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
+    env_file:
+      - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/barloyalty_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=1q2w3e
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    depends_on:
+      - db

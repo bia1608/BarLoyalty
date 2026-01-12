@@ -20,55 +20,56 @@ public class DataLoader {
                                    RewardRepository rewardRepository,
                                    PasswordEncoder passwordEncoder) {
         return args -> {
-            // VERIFICARE: Rulăm acest cod DOAR dacă nu există niciun bar în baza de date
-            if (barRepository.count() == 0) {
-                System.out.println("Baza de date este goala. Se adauga date initiale...");
+            // Verificăm dacă baza de date este goală folosind userRepository (e mai sigur)
+            if (userRepository.count() == 0) {
+                System.out.println(">>> [SEED] Baza de date este goala. Se adauga datele cerute in barem...");
 
-                // 4. Creeaza un utilizator tehnic pentru serviciul QR
+                // 1. Creează utilizatorul pentru Microserviciul Python (Cerința Comunicare HTTP)
+                // Acesta va fi folosit de scriptul Python pentru a se autentifica la Gateway
                 User qrServiceUser = new User();
-                qrServiceUser.setUsername("qr-service-user");
-                qrServiceUser.setPassword(passwordEncoder.encode("secret-password"));
-                qrServiceUser.setRole("QR_SERVICE"); // Ii dam un rol special
+                qrServiceUser.setUsername("qr_service");
+                qrServiceUser.setPassword(passwordEncoder.encode("qr_secret_pass"));
+                qrServiceUser.setRole("SERVICE");
                 userRepository.save(qrServiceUser);
 
-                // 1. Creează utilizatori
+                // 2. Creează Clienți (Barem: minim 2 clienți)
                 User client1 = new User();
                 client1.setUsername("client1");
-                client1.setPassword(passwordEncoder.encode("password"));
+                client1.setPassword(passwordEncoder.encode("password123"));
                 client1.setRole("CLIENT");
                 userRepository.save(client1);
 
                 User client2 = new User();
                 client2.setUsername("client2");
-                client2.setPassword(passwordEncoder.encode("password"));
+                client2.setPassword(passwordEncoder.encode("password123"));
                 client2.setRole("CLIENT");
                 userRepository.save(client2);
 
-                // 2. Creează baruri
+                // 3. Creează Baruri (Barem: minim 2 baruri)
                 Bar bar1 = new Bar();
-                bar1.setName("Barul Vesel");
+                bar1.setName("The Beer Garden");
                 barRepository.save(bar1);
 
                 Bar bar2 = new Bar();
-                bar2.setName("Cafeneaua Liniștită");
+                bar2.setName("Cocktail Haven");
                 barRepository.save(bar2);
 
-                // 3. Adaugă recompense
+                // 4. Adaugă Recompense
                 Reward r1 = new Reward();
-                r1.setName("Cafea Gratis");
+                r1.setName("Bere Gratis");
                 r1.setPointsRequired(50);
                 r1.setBar(bar1);
                 rewardRepository.save(r1);
 
                 Reward r2 = new Reward();
-                r2.setName("Bere la Jumătate de Preț");
+                r2.setName("Voucher 20 RON");
                 r2.setPointsRequired(100);
-                r2.setBar(bar1);
+                r2.setBar(bar2);
                 rewardRepository.save(r2);
 
-                System.out.println("Date initiale adaugate cu succes!");
+                System.out.println(">>> [SEED] Datele initiale au fost adaugate cu succes!");
             } else {
-                System.out.println("Baza de date contine deja date. Nu se adauga nimic nou.");
+                System.out.println(">>> [SEED] Baza de date contine deja date. Se sare peste populare.");
             }
         };
     }

@@ -21,9 +21,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Acesta este URL-ul la care se vor conecta clienții WebSocket
-        // Ex: ws://localhost:8080/ws
-        // withSockJS() este pentru compatibilitate cu browsere mai vechi
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        // Înregistrăm endpoint-ul simplu pentru Postman/Testare RAW
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*"); // FĂRĂ .withSockJS() aici pentru Postman
+
+        // Dacă ai nevoie de SockJS pentru un frontend în viitor, îl poți pune pe alt path:
+        registry.addEndpoint("/ws-web")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 }
